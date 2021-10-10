@@ -47,8 +47,6 @@ als8 %>%
 
 The same pattern is visible when looking at the data in a survival curve. 
 
-Survival Curve
-
 ```{r}
 
 Survival_table <- data.frame(Days = NULL, Contestants = NULL)
@@ -66,13 +64,9 @@ Survival_table = Survival_table %>%
 Survival_table %>% 
   ggplot(aes(x=Days, y = Percent_left)) +
   geom_point() +
-  theme_minimal()
+  theme_minimal() + 
+  labs(title = element_text('Survival curve Alone contestants'))
 
-Survival_rate_1_week = Survival_table %>% filter(Days == 7) %>% pull(Percent_left) %>% round(0)
-Survival_rate_2_week = Survival_table %>% filter(Days == 14) %>% pull(Percent_left) %>% round(0)
-Survival_rate_1_month = Survival_table %>% filter(Days == 7*4) %>% pull(Percent_left) %>% round(0)
-Survival_rate_2_month = Survival_table %>% filter(Days == 7*4*2) %>% pull(Percent_left) %>% round(0)
-Survival_rate_3_month = Survival_table %>% filter(Days == 7*4*3) %>% pull(Percent_left) %>% round(0)
   
 ```
 
