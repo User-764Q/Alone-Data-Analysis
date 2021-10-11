@@ -1,19 +1,71 @@
 ---
-title: "Alone Data Analysis"
-output:
+output: 
   html_document:
-    df_print: paged
+    toc: true
+    toc_float: 
+      collapsed: false
+  number_sections: true
+ 
+title: ""
+author: "[User-764Q](https://github.com/User-764Q)"
+date: "`r paste0('Last Run: ', format(Sys.time(), '%A %d-%B-%Y'))`"
+params: 
+  param1: "Don't Forget about params"
+
 ---
 
-Alone has been on the History channel for 8 seasons and is one of my favorite shows. 
+<style>
+
+#TOC {
+ font-family: Calibri; 
+ font-size: 16px;
+ border-color: #3D68DF;
+ background: #3D68DF;
+}
+
+body {
+  font-family: Garamond;
+  font-size: 16px; 
+  border-color: #D0D0D0;
+  background-color: #D0D0D0;
+  color: #1A1A1A;
+}
+
+pre {
+  color: #1A1A1A
+  background: #D0D0D0;
+  background-color: #D0D0D0
+  font-family: Calibri; 
+  
+}
+
+</style>
+
+# Alone Data Analysis
+
+#### Seasons 1 - 7 
+
+[Alone](https://en.wikipedia.org/wiki/Alone_(TV_series)) has been on the History channel for 8 seasons and is one of my favorite shows. 
 
 I wanted to look at the data behind it to see how long contestants last and why they leave.
 
-I created the dataset my self by browsing and googling mostly wikipedia with some augmentation from other sites. 
+I created the dataset myself mostly from Wikipedia with some augmentation from other sites. 
 
-I put the reasons for leaving in my own groups noting that this isn't an exact science, many people left due to a combination of not getting enough food and mental fatigue of not wanting to do it anymore. I decided which of those groups the contestant would be in by asking my self.. 'Yeah they feel pretty low right now but if the got a really good big meal would they stay?'
+I put the reasons for leaving into my own groups noting that this isn't an exact science. Many people left due to a combination of not getting enough food and mental fatigue (not wanting to do it anymore). I decided which of those groups the contestant would be in by asking my self.. 'if they got a really good big meal would they stay?' if the answer was yes then I put them down as 'medical / starvation' rather than 'not wanting to do it any more'.  
 
-```{r}
+For the teams season (s4) I treated each team as one person, for the all stars season (s3) I just treated them as separate new contestants. 
+
+There have been multiple seasons at two locations, 
+
+* Slave Lake and 
+
+* Vancouver Island. 
+
+Since for those locations n > 1 I did breakdowns and comparisons for those two locations. 
+
+I haven't updated for season 8 yet, but that was brutal to watch, will be interesting how much harder it looks in the numbers. 
+
+```{r, message = FALSE, warning = FALSE}
 
 library(tidyverse)
 library(ggthemes)
@@ -39,7 +91,7 @@ als8 = als8 %>%
 
 als8 %>% 
   ggplot(aes(x = week_left)) + 
-  geom_histogram(binwidth  = 1)
+  geom_histogram(binwidth  = 1, fill = 'blue', alpha = .5)
 
 ```
 
@@ -63,9 +115,12 @@ Survival_table = Survival_table %>%
 
 Survival_table %>% 
   ggplot(aes(x=Days, y = Percent_left)) +
-  geom_point() +
+  geom_point(col = 'blue', alpha = .5) +
   theme_minimal() + 
-  labs(title = element_text('Survival curve Alone contestants'))
+  labs(title = element_text('Survival curve Alone contestants')) + 
+  geom_hline(yintercept = 50, col = 'black', alpha = .5) + 
+  annotate("text", x = 50, y = 60, label = "50% Survive To Day 40")
+  
 
   
 ```
@@ -111,7 +166,7 @@ Only two locations have had multiple seasons.
 
 Looking at the survival curves for these those locations to see which was harder. Slave lake definately had more staying potential and less people pulling out in the first week or two
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 
 Seasons <- read_tsv(file.path('data','Seasons-Table 1.tsv'))
 
@@ -152,7 +207,7 @@ Survival_table_loc %>%
 
 Looking at reasons for leaving (my own custom groupings) more people left because they didn't want to do it any more vs starving out, with more accidents than I would have guessed. 
 
-```{r}
+```{r message = FALSE, warning = FALSE}
 
 als81 = als8 %>%
   mutate(ReasonForLeaving_fct = fct_infreq(als8$ReasonForLeaving)) %>%
@@ -162,7 +217,7 @@ als81 = als8 %>%
 
 als81 %>%
   ggplot(aes(x=ReasonForLeaving_fct, y = People)) + 
-  geom_col() + 
+  geom_col(fill = 'blue', alpha = .5) + 
   coord_flip() +
   theme_minimal()
 
@@ -173,7 +228,12 @@ als81 %>%
 
 Limiting it to Slave Lake and Vancouver Island 
 
-```{r}
+```{r message = FALSE, warning = FALSE}
+
+als_loc <- als8 %>%
+  left_join(Seasons, by = c('Season' = 'SeasonNo')) %>%
+  filter(Location  ==  'Vancouver Island' | 
+         Location ==  'Slave Lake')
 
 als_loc <- als_loc %>%
   mutate(ReasonForLeaving_fct = fct_infreq(als_loc$ReasonForLeaving)) %>%
@@ -185,10 +245,90 @@ als_loc %>%
   ggplot(aes(x=ReasonForLeaving_fct, 
              y = People, 
              Col = Location, 
-             fill = Location, fill = 'blue')) + 
-  geom_col(position = 'dodge') + 
+             fill = ReasonForLeaving_fct,)) + 
+  geom_col() +
+  facet_wrap(~Location) + 
   coord_flip() +
   theme_minimal() + 
-  labs(title = element_text('Reason Contestants Left By Location'))
+  labs(title = element_text('Reason Contestants Left By Location')) + 
+  theme(legend.position = 'none')
 
 ```
+
+Vancouver Island had a lot of people leave because they 'didn't want to do it anymore'
+But that could just be thrown by the teams series where heaps of teams dropped out at the start because one of them left. ALso way more people dropped out at the start of Vancouver Island, again could be the teams season throwing out the numbers. When I included the teams data I just treated each team as one person. 
+
+Redoing the comparison. without that season (Season 4) . 
+
+```{r message = FALSE, warning = FALSE}
+
+Seasons <- read_tsv(file.path('data','Seasons-Table 1.tsv'))
+
+als_loc <- als8 %>%
+  left_join(Seasons, by = c('Season' = 'SeasonNo')) %>%
+  filter(Location  ==  'Vancouver Island' | 
+         Location ==  'Slave Lake') %>%
+  filter(Season != 4)
+
+Survival_table_loc <- data.frame(Days = NULL, Contestants = NULL, Location = NULL)
+
+for (l in unique(als_loc$Location)) {
+  als_locl <- als_loc %>% filter(Location == l)
+  for (d in 0:max(als_locl$DayLeft)) {
+  als_this <- als_locl %>% 
+    filter(DayLeft >= d)
+  
+  Survival_table_loc = rbind(Survival_table_loc, 
+                             data.frame(Days = d, 
+                                        Contestants = length(als_this$ID),
+                             Location = l))
+}}
+
+Survival_table_loc = Survival_table_loc %>%
+  mutate(Percent_left = (Contestants / max(Contestants))*100)
+
+Survival_table_loc %>% 
+  ggplot(aes(x=Days, 
+             y = Percent_left, 
+             group = Location, 
+             colour = Location)) +
+  geom_line() + 
+  theme_minimal() + 
+  labs(title = element_text('Alone Survival By Location excl s4'))
+
+```
+
+Similar pattern as before. 
+
+```{r message = FALSE, warning = FALSE}
+
+Seasons <- read_tsv(file.path('data','Seasons-Table 1.tsv'))
+
+als_loc <- als8 %>%
+  filter(Season != 4) %>%
+  left_join(Seasons, by = c('Season' = 'SeasonNo')) %>%
+  filter(Location  ==  'Vancouver Island' | 
+         Location ==  'Slave Lake')
+
+
+als_loc <- als_loc %>%
+  mutate(ReasonForLeaving_fct = fct_infreq(als_loc$ReasonForLeaving)) %>%
+  group_by(ReasonForLeaving_fct, Location) %>%
+  summarise(People = n()) %>%
+  ungroup() 
+
+als_loc %>%
+  ggplot(aes(x=ReasonForLeaving_fct, 
+             y = People, 
+             Col = Location, 
+             fill = ReasonForLeaving_fct,)) + 
+  geom_col() +
+  facet_wrap(~Location) + 
+  coord_flip() +
+  theme_minimal() + 
+  labs(title = element_text('Reason Contestants Left By Location')) + 
+  theme(legend.position = 'none')
+
+```
+
+Didn't really change the pattern much. 
