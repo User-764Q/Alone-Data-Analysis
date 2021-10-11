@@ -169,7 +169,7 @@ als81 %>%
 ```
 
 
-e\### Reson By Location
+### Reason By Location
 
 Limiting it to Slave Lake and Vancouver Island 
 
@@ -185,10 +185,10 @@ als_loc %>%
   ggplot(aes(x=ReasonForLeaving_fct, 
              y = People, 
              Col = Location, 
-             fill = Location)) + 
+             fill = Location, fill = 'blue')) + 
   geom_col(position = 'dodge') + 
   coord_flip() +
   theme_minimal() + 
-  labs(title = element_text('Reason Contenants Left By Location'))
+  labs(title = element_text('Reason Contestants Left By Location'))
 
 ```
